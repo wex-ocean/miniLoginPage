@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Octocat Login</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --primary: #8b5cf6; /* Violet Neon */
+            --accent: #06b6d4;  /* Cyan Neon */
+            --octo-black: #1a1a1a;
+            --octo-skin: #f0f0f0;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            color: white;
+        }
+
+        /* Particles Background */
+        .particles {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: floatUp linear infinite;
+        }
+
+        /* Glass Card */
+        .login-card {
+            position: relative;
+            z-index: 10;
+            width: 400px;
+            padding: 40px;
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            margin: 0 0 30px;
+            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Inputs */
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 0;
+            font-size: 16px;
+            color: #fff;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #333;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group label {
+            position: absolute;
+            top: 12px;
+            left: 0;
+            font-size: 16px;
+            color: #888;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus ~ label,
+        .input-group input:valid ~ label {
+            top: -20px;
+            font-size: 12px;
+            color: var(--accent);
+        }
+
+        .input-group input:focus {
+            border-bottom: 2px solid var(--accent);
+            box-shadow: 0 4px 10px -2px rgba(6, 182, 212, 0.3);
+        }
+
+        /* Mascot Container */
+        .mascot-container {
+            position: absolute;
+            right: -60px;
+            top: -65px;
+            width: 120px;
+            height: 120px;
+            z-index: 20;
+        }
+
+        /* SVG Octocat Styles */
+        .octo-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .head-group { transform-origin: center 80px; transition: transform 0.3s ease-out; }
+        .eye { transition: transform 0.1s; }
+        .pupil { transition: transform 0.1s; }
+        .mug-group { transform-origin: center; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .steam { opacity: 0; }
+        .blush { opacity: 0; transition: opacity 0.3s; }
+        .heart { opacity: 0; transform: translateY(0); }
+
+        /* Mascot States */
+        /* Watching: Head tilts slightly, pupils follow input */
+        .is-watching .head-group { transform: rotate(5deg) translateY(5px); }
+        .is-watching .mug-group { transform: translateY(10px); } /* Lowers mug to peek */
+        
+        /* Sipping (Idle): Head neutral, mug up */
+        .is-sipping .mug-group { transform: translateY(-5px) rotate(-5deg); }
+        .is-sipping .head-group { transform: rotate(0deg); }
+        .is-sipping .blush { opacity: 0.6; }
+        .is-sipping .eye { transform: scaleY(0.5); } /* Happy squint */
+        .is-sipping .steam { animation: steamRise 2s infinite; }
+
+        /* Success */
+        .is-success .thumb { opacity: 1; transform: translateY(-10px) rotate(-20deg); }
+        .is-success .heart-particle { animation: heartFloat 1s forwards; }
+
+        /* Animations */
+        @keyframes steamRise {
+            0% { opacity: 0; transform: translateY(0) scale(0.5); }
+            50% { opacity: 0.8; }
+            100% { opacity: 0; transform: translateY(-20px) scale(1.5); }
+        }
+
+        @keyframes heartFloat {
+            0% { opacity: 1; transform: translateY(0) scale(0.5); }
+            100% { opacity: 0; transform: translateY(-40px) scale(1.2); }
+        }
+        
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover { opacity: 0.9; transform: scale(1.02); }
+    </style>
+</head>
+<body>
+
+    <div class="particles" id="particles"></div>
+
+    <div class="login-card">
+        <div class="mascot-container" id="mascot">
+            <svg class="octo-svg" viewBox="0 0 100 100">
+                <path d="M30 80 Q50 90 70 80 L70 100 L30 100 Z" fill="#1a1a1a"/>
+                
+                <g class="head-group">
+                    <path d="M20 30 L30 10 L45 25 Z" fill="#1a1a1a"/>
+                    <path d="M80 30 L70 10 L55 25 Z" fill="#1a1a1a"/>
+                    <ellipse cx="50" cy="50" rx="40" ry="32" fill="#1a1a1a"/>
+                    <ellipse cx="50" cy="55" rx="32" ry="22" fill="#f0f0f0"/>
+                    <g class="eyes-container">
+                        <ellipse cx="38" cy="52" rx="8" ry="10" fill="white" class="eye"/>
+                        <circle cx="38" cy="52" r="3" fill="black" class="pupil" id="pupil-left"/>
+                        
+                        <ellipse cx="62" cy="52" rx="8" ry="10" fill="white" class="eye"/>
+                        <circle cx="62" cy="52" r="3" fill="black" class="pupil" id="pupil-right"/>
+                    </g>
+                    <circle cx="30" cy="62" r="4" fill="#ff9999" class="blush"/>
+                    <circle cx="70" cy="62" r="4" fill="#ff9999" class="blush"/>
+                </g>
+
+                <g class="mug-group">
+                    <rect x="35" y="65" width="30" height="25" rx="4" fill="#3b82f6"/>
+                    <path d="M65 70 Q75 70 75 80 Q75 90 65 90" fill="none" stroke="#3b82f6" stroke-width="3"/>
+                    <path d="M45 60 Q50 55 45 50" stroke="white" stroke-width="2" fill="none" class="steam" style="animation-delay: 0s"/>
+                    <path d="M55 60 Q50 55 55 50" stroke="white" stroke-width="2" fill="none" class="steam" style="animation-delay: 0.5s"/>
+                </g>
+                
+                <text x="45" y="40" font-size="10" fill="red" class="heart-particle" style="opacity:0">❤️</text>
+                <text x="55" y="30" font-size="10" fill="red" class="heart-particle" style="opacity:0; animation-delay: 0.2s">❤️</text>
+            </svg>
+        </div>
+
+        <h2>Login</h2>
+        <form id="loginForm">
+            <div class="input-group">
+                <input type="text" id="username" required autocomplete="off">
+                <label>Username</label>
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" required>
+                <label>Password</label>
+            </div>
+            <button type="submit">Enter</button>
+        </form>
+    </div>
+
+    <script>
+        const mascot = document.getElementById('mascot');
+        const inputs = document.querySelectorAll('input');
+        const pupilLeft = document.getElementById('pupil-left');
+        const pupilRight = document.getElementById('pupil-right');
+        const particleContainer = document.getElementById('particles');
+        
+        let idleTimer;
+
+        // 1. Particle Background Generator
+        for(let i=0; i<30; i++) {
+            const p = document.createElement('div');
+            p.classList.add('particle');
+            p.style.left = Math.random() * 100 + '%';
+            p.style.width = Math.random() * 5 + 2 + 'px';
+            p.style.height = p.style.width;
+            p.style.animationDuration = Math.random() * 10 + 5 + 's';
+            p.style.animationDelay = Math.random() * 5 + 's';
+            particleContainer.appendChild(p);
+        }
+
+        // 2. Interaction Logic
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                startWatching();
+                updateEyes(input.value.length);
+            });
+
+            input.addEventListener('input', (e) => {
+                startWatching();
+                updateEyes(e.target.value.length);
+                checkCompletion();
+                
+                // Reset Idle Timer
+                clearTimeout(idleTimer);
+                idleTimer = setTimeout(goIdle, 800); // 800ms delay before sipping
+            });
+
+            input.addEventListener('blur', () => {
+                goIdle();
+            });
+        });
+
+        function startWatching() {
+            mascot.classList.add('is-watching');
+            mascot.classList.remove('is-sipping');
+        }
+
+        function goIdle() {
+            mascot.classList.remove('is-watching');
+            mascot.classList.add('is-sipping');
+            resetEyes();
+        }
+
+        // 3. Eye Movement Logic (Math to move pupils)
+        function updateEyes(length) {
+            // Cap movement to avoid eyes rolling out of head
+            const maxMove = 6; 
+            const moveX = Math.min(length * 0.5, maxMove); 
+            
+            // Move pupils
+            const translate = `translate(${moveX}px, 2px)`; // +2px y for looking down at inputs
+            pupilLeft.style.transform = translate;
+            pupilRight.style.transform = translate;
+        }
+
+        function resetEyes() {
+            pupilLeft.style.transform = 'translate(0, 0)';
+            pupilRight.style.transform = 'translate(0, 0)';
+        }
+
+        // 4. Bonus: Completion Check
+        function checkCompletion() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if (user.length > 0 && pass.length > 0) {
+                mascot.classList.add('is-success');
+            } else {
+                mascot.classList.remove('is-success');
+            }
+        }
+
+        // Initialize in idle state
+        goIdle();
+
+    </script>
+</body>
+</html>
